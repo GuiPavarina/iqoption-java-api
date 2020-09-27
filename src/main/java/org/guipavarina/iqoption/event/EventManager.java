@@ -11,23 +11,14 @@ import org.slf4j.LoggerFactory;
 public class EventManager {
 	
 	private final Logger logger = LoggerFactory.getLogger(EventManager.class);
-
-	private static EventManager INSTANCE;
 	
 	private Map<Events, List<EventListener>> subscribers = new HashMap<>();
 	
-	private EventManager() {
+	public EventManager() {
 		
 		for(Events ev: Events.values()) {
 			subscribers.put(ev, new ArrayList<EventListener>());
 		}
-	}
-	
-	public static EventManager getInstance() {
-		if(INSTANCE == null) {
-			INSTANCE = new EventManager();
-		}
-		return INSTANCE;
 	}
 	
 	public void subscribe(Events ev, EventListener listener) {

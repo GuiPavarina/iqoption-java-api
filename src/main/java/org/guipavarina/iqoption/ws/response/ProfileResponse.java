@@ -15,7 +15,7 @@ public class ProfileResponse {
 	@JsonProperty("balance")
 	private Double balance;
 	@JsonProperty("balance_id")
-	private Integer balanceId;
+	private Long balanceId;
 	@JsonProperty("balances")
 	private List<Balance> balances = null;
 	@JsonProperty("name")
@@ -32,12 +32,12 @@ public class ProfileResponse {
 	}
 
 	@JsonProperty("balance_id")
-	public Integer getBalanceId() {
+	public Long getBalanceId() {
 		return balanceId;
 	}
 
 	@JsonProperty("balance_id")
-	public void setBalanceId(Integer balanceId) {
+	public void setBalanceId(Long balanceId) {
 		this.balanceId = balanceId;
 	}
 

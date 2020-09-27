@@ -13,12 +13,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class IQOptionMessageHandler implements MessageHandler {
 	
 	private final Logger logger = LoggerFactory.getLogger(IQOptionMessageHandler.class);
+	
+	private EventManager eventManager;
+	
+	public IQOptionMessageHandler(EventManager eventManager) {
+		this.eventManager = eventManager;
+	}
 
 	@Override
 	public void handleMessage(String message) {	
 		try {
 			Message msg = new ObjectMapper().readValue(message, Message.class);
-			EventManager.getInstance().notif(msg.getName(), message);
+			this.eventManager.notif(msg.getName(), message);
 		} catch (JsonMappingException e) {
 			logger.error(e.getMessage());
 		} catch (JsonProcessingException e) {
