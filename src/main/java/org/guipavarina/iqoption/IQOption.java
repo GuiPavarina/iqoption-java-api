@@ -2,13 +2,18 @@ package org.guipavarina.iqoption;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import org.guipavarina.iqoption.enums.BalanceType;
 import org.guipavarina.iqoption.event.EventListener;
 import org.guipavarina.iqoption.event.EventManager;
 import org.guipavarina.iqoption.event.Events;
 import org.guipavarina.iqoption.factory.ResponseFactory;
+import org.guipavarina.iqoption.service.ChangeBalanceService;
 import org.guipavarina.iqoption.service.LoginService;
+import org.guipavarina.iqoption.ws.request.CandleBody;
+import org.guipavarina.iqoption.ws.request.CandleRequestMessage;
+import org.guipavarina.iqoption.ws.request.Msg;
 import org.guipavarina.iqoption.ws.request.SSID;
 import org.guipavarina.iqoption.ws.response.Balance;
 import org.guipavarina.iqoption.ws.response.ProfileRootMessage;
@@ -22,6 +27,9 @@ public class IQOption implements EventListener {
 
 	private final Logger logger = LoggerFactory.getLogger(IQOption.class);
 
+	/*
+	 * Authentication
+	 */
 	private String email;
 	private String password;
 
@@ -29,12 +37,27 @@ public class IQOption implements EventListener {
 
 	private String ssid = "";
 	private String cookies = "";
+	
+	/**
+	 * Profile
+	 */
+	private List<Balance> balances;
 
+	/**
+	 * Event Manager
+	 */
 	private EventManager eventManager;
 	
+	/*
+	 * Web Socket
+	 */
 	private IQOptionWS webSocket;
 
+	/*
+	 * Serivces
+	 */
 	private LoginService loginService;
+	private ChangeBalanceService changeBalanceService;
 	
 	public IQOption(String email, String password) {
 		super();
@@ -47,20 +70,34 @@ public class IQOption implements EventListener {
 	
 	private void initServices() {
 		this.loginService = new LoginService();
+		this.changeBalanceService = new ChangeBalanceService();
 	}
 	
 	private void initListeners() {
 		this.eventManager.subscribe(Events.PROFILE, this);
 	}
 
+	/**
+	 * check if websocket and api are fine
+	 * if it returns false, one of them may have failed
+	 * @return
+	 */
 	public boolean isAuthenticated() {
 		return isAuthenticated;
 	}
 	
+	/**
+	 * Gets the EventManager for this IQOption instance.
+	 * It should be used to subscribe to events.
+	 * @return instance of the EventManager
+	 */
 	public EventManager getEventManager() {
 		return this.eventManager;
 	}
 
+	/**
+	 * Connect to both api and websocket
+	 */
 	public void connect() {
 		ResponseEntity<String> res = null;
 		try {
@@ -94,6 +131,11 @@ public class IQOption implements EventListener {
 
 	}
 	
+	/**
+	 * Method used to get the current balance.
+	 * REAL or PRACTICE account
+	 * @param profile
+	 */
 	private void getActiveBalance(ProfileRootMessage profile) {
 		Long id = profile.getMsg().getBalanceId();
 		Balance balance = profile.getMsg().getBalances()
@@ -101,11 +143,33 @@ public class IQOption implements EventListener {
 			.filter(b -> b.getId() == id)
 			.findFirst().get();
 		logger.info("Current balance is: " + BalanceType.get(balance.getType()));
-		logger.info("Balance data: " + balance.toString());
+		balances = profile.getMsg().getBalances();
 	}
 	
-	public void sendWSMessage(Object obj) {
-		webSocket.sendMessage(obj);
+	/**
+	 * Method to get candles
+	 * Subscribe to the Events.CANDLE to get the response
+	 * @param count -  number of candles
+	 * @param to - current time in seconds
+	 * @param size - size in seconds of each candle  
+	 * @param activeid - id of the ticker
+	 */
+	public void getCandles(int count, int to, int size, int activeid ) {
+		webSocket.sendMessage(new CandleRequestMessage(new Msg(new CandleBody(count, to, size, activeid))));
+	}
+	
+	/**
+	 * Change balance type
+	 * Check BalanceType for reference
+	 * @param type
+	 * @return Response Entity
+	 */
+	public ResponseEntity<String> changeBalance(BalanceType type) {
+		Balance balance = balances
+				.stream()
+				.filter(b -> b.getType() == type.getId())
+				.findFirst().get();
+		return changeBalanceService.changeBalance(balance.getId(), this.ssid);
 	}
 	
 	@Override
