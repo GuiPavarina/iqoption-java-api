@@ -146,6 +146,12 @@ public class IQOption implements EventListener {
 		balances = profile.getMsg().getBalances();
 	}
 	
+	/*
+	 * ------------------------------------------------ 
+	 *           Web Socket methods
+	 * ------------------------------------------------
+	 */
+	
 	/**
 	 * Method to get candles
 	 * Subscribe to the Events.CANDLE to get the response
@@ -157,6 +163,19 @@ public class IQOption implements EventListener {
 	public void getCandles(int count, int to, int size, int activeid ) {
 		webSocket.sendMessage(new CandleRequestMessage(new Msg(new CandleBody(count, to, size, activeid))));
 	}
+	
+	/*
+	 * ------------------------------------------------ 
+	 *          END of Web Socket methods
+	 * ------------------------------------------------
+	 */
+	
+	/*
+	 * ------------------------------------------------ 
+	 *           REST API methods
+	 * ------------------------------------------------
+	 */
+	
 	
 	/**
 	 * Change balance type
@@ -171,6 +190,12 @@ public class IQOption implements EventListener {
 				.findFirst().get();
 		return changeBalanceService.changeBalance(balance.getId(), this.ssid);
 	}
+	
+	/*
+	 * ------------------------------------------------ 
+	 *           End of REST API methods
+	 * ------------------------------------------------
+	 */
 	
 	@Override
 	public void update(Events ev, String message) {
