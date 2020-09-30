@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 @ClientEndpoint
 public class IQOptionWS {
@@ -29,6 +30,7 @@ public class IQOptionWS {
     public IQOptionWS(URI endpointURI) {
         try {
             WebSocketContainer container = ContainerProvider.getWebSocketContainer();
+            container.setDefaultMaxTextMessageBufferSize(2048000 * 5); // 10mb
             container.connectToServer(this, endpointURI);
         } catch (Exception e) {
         	logger.error(e.getMessage());
@@ -64,7 +66,9 @@ public class IQOptionWS {
     }
 
     public void sendMessage(Object message) {
-    	ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+    	ObjectMapper mapper = new ObjectMapper();
+    	mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+    	ObjectWriter ow = mapper.writer().withDefaultPrettyPrinter();    	
 		try {
 			String json = ow.writeValueAsString(message);
 			this.userSession.getAsyncRemote().sendText(json);

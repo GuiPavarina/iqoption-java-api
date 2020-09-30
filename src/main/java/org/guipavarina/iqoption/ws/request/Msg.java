@@ -6,29 +6,29 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "body", "version", "name" })
-public class Msg {
+public class Msg<T> {
 
 	@JsonProperty("body")
-	private CandleBody body;
+	private T body;
 	@JsonProperty("version")
 	private String version;
 	@JsonProperty("name")
 	private String name;
 
-	public Msg(CandleBody body) {
+	public Msg(String name, String version, T body) {
 		super();
 		this.body = body;
-		this.version = "2.0";
-		this.name = "get-candles";
+		this.version = version;
+		this.name = name;
 	}
 
 	@JsonProperty("body")
-	public CandleBody getBody() {
+	public T getBody() {
 		return body;
 	}
 
 	@JsonProperty("body")
-	public void setBody(CandleBody body) {
+	public void setBody(T body) {
 		this.body = body;
 	}
 

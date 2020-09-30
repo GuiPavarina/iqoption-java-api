@@ -11,10 +11,9 @@ import org.guipavarina.iqoption.event.Events;
 import org.guipavarina.iqoption.factory.ResponseFactory;
 import org.guipavarina.iqoption.service.ChangeBalanceService;
 import org.guipavarina.iqoption.service.LoginService;
+import org.guipavarina.iqoption.ws.request.BaseRequestMessage;
 import org.guipavarina.iqoption.ws.request.CandleBody;
-import org.guipavarina.iqoption.ws.request.CandleRequestMessage;
 import org.guipavarina.iqoption.ws.request.Msg;
-import org.guipavarina.iqoption.ws.request.SSID;
 import org.guipavarina.iqoption.ws.response.Balance;
 import org.guipavarina.iqoption.ws.response.ProfileRootMessage;
 import org.slf4j.Logger;
@@ -124,7 +123,7 @@ public class IQOption implements EventListener {
 				return;
 			}
 
-			webSocket.sendMessage(new SSID(ssid));
+			webSocket.sendMessage(new BaseRequestMessage<String>("ssid", "", ssid));
 		} catch (URISyntaxException e) {
 			e.printStackTrace();
 		}
@@ -160,8 +159,19 @@ public class IQOption implements EventListener {
 	 * @param size - size in seconds of each candle  
 	 * @param activeid - id of the ticker
 	 */
-	public void getCandles(int count, int to, int size, int activeid ) {
-		webSocket.sendMessage(new CandleRequestMessage(new Msg(new CandleBody(count, to, size, activeid))));
+	public void getCandles(int count, int to, int size, int activeId ) {
+		CandleBody body = new CandleBody(count, to, size, activeId);
+		webSocket.sendMessage(new BaseRequestMessage<Msg<CandleBody>>("sendMessage", "", new Msg<CandleBody>("get-candles", "2.0", body)));
+	}
+	
+	/**
+	 * Subscribe to Events.INITIALIZATION_DATA to get the response
+	 * 
+	 * This method returns a huge amount of data with all binary actives 
+	 * and its info.
+	 */
+	public void getAllBinaryData() {
+		webSocket.sendMessage(new BaseRequestMessage<Msg<Object>>("sendMessage", "", new Msg<Object>("get-initialization-data", "3.0", new Object())));
 	}
 	
 	/*

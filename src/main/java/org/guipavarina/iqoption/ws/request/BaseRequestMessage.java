@@ -6,28 +6,28 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "msg", "name", "request_id" })
-public class CandleRequestMessage {
+public class BaseRequestMessage<T> {
 
 	@JsonProperty("msg")
-	private Msg msg;
+	private T msg;
 	@JsonProperty("name")
 	private String name;
 	@JsonProperty("request_id")
 	private String requestId;
 	
-	public CandleRequestMessage(Msg msg) {
-		this.name = "sendMessage";
-		this.requestId = "";
+	public BaseRequestMessage(String name, String requestId,T msg) {
+		this.name = name;
+		this.requestId = requestId;
 		this.msg = msg;
 	}
 
 	@JsonProperty("msg")
-	public Msg getMsg() {
+	public T getMsg() {
 		return msg;
 	}
 
 	@JsonProperty("msg")
-	public void setMsg(Msg msg) {
+	public void setMsg(T msg) {
 		this.msg = msg;
 	}
 

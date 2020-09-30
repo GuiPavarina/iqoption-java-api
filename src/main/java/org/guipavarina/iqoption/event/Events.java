@@ -5,7 +5,8 @@ public enum Events {
 	PROFILE("profile"),
 	HEARTBEAT("heartbeat"),
 	TIMESYNC("timeSync"),
-	CANDLE("candles");
+	CANDLE("candles"),
+	INITIALIZATION_DATA("initialization-data");
 	
 	private String eventName;
 	
