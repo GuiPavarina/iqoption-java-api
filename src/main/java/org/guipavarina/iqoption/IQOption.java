@@ -6,13 +6,17 @@ import java.util.List;
 
 import org.guipavarina.iqoption.enums.Actives;
 import org.guipavarina.iqoption.enums.BalanceType;
+import org.guipavarina.iqoption.enums.BinaryBuyDirection;
+import org.guipavarina.iqoption.enums.BinaryOptionId;
 import org.guipavarina.iqoption.event.EventListener;
 import org.guipavarina.iqoption.event.EventManager;
 import org.guipavarina.iqoption.event.Events;
 import org.guipavarina.iqoption.factory.ResponseFactory;
 import org.guipavarina.iqoption.service.ChangeBalanceService;
 import org.guipavarina.iqoption.service.LoginService;
+import org.guipavarina.iqoption.utils.IQUtils;
 import org.guipavarina.iqoption.ws.request.BaseRequestMessage;
+import org.guipavarina.iqoption.ws.request.BinaryBuyRequest;
 import org.guipavarina.iqoption.ws.request.CandleBody;
 import org.guipavarina.iqoption.ws.request.Msg;
 import org.guipavarina.iqoption.ws.response.Balance;
@@ -45,6 +49,7 @@ public class IQOption implements EventListener {
 	 * Profile
 	 */
 	private List<Balance> balances;
+	private Long activeBalanceId;
 
 	/**
 	 * Event Manager
@@ -147,6 +152,7 @@ public class IQOption implements EventListener {
 			.stream()
 			.filter(b -> b.getId() == id)
 			.findFirst().get();
+		this.activeBalanceId = id;
 		logger.info("Current balance is: " + BalanceType.get(balance.getType()));
 		balances = profile.getMsg().getBalances();
 	}
@@ -181,6 +187,22 @@ public class IQOption implements EventListener {
 	 */
 	public void getAllBinaryData() {
 		webSocket.sendMessage(new BaseRequestMessage<Msg<Object>>("sendMessage", "", new Msg<Object>("get-initialization-data", "3.0", new Object())));
+	}
+	
+	/**
+	 * Method to buy an binary option
+	 * 
+	 * Duration must be in minutes: 1 or 5 
+	 * 
+	 * @param price
+	 * @param direction
+	 * @param active
+	 * @param duration
+	 */
+	public void buyBinary(Double price, BinaryBuyDirection direction, Actives active, int duration) {
+		Long expiration = IQUtils.getExpiration(duration);
+		BinaryBuyRequest body = new BinaryBuyRequest(BinaryOptionId.getOptionIdByExpiration(duration).getId(), direction.getDirection(), price, this.activeBalanceId, expiration, active.getId());
+		webSocket.sendMessage(new BaseRequestMessage<Msg<BinaryBuyRequest>>("sendMessage", "buy", new Msg<BinaryBuyRequest>("binary-options.open-option", "1.0", body)));
 	}
 	
 	/*
