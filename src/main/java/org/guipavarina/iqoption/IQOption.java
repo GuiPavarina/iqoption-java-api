@@ -12,7 +12,6 @@ import org.guipavarina.iqoption.event.EventListener;
 import org.guipavarina.iqoption.event.EventManager;
 import org.guipavarina.iqoption.event.Events;
 import org.guipavarina.iqoption.factory.ResponseFactory;
-import org.guipavarina.iqoption.service.ChangeBalanceService;
 import org.guipavarina.iqoption.service.LoginService;
 import org.guipavarina.iqoption.utils.IQUtils;
 import org.guipavarina.iqoption.ws.request.BaseRequestMessage;
@@ -65,7 +64,6 @@ public class IQOption implements EventListener {
 	 * Services
 	 */
 	private LoginService loginService;
-	private ChangeBalanceService changeBalanceService;
 	
 	public IQOption(String email, String password) {
 		super();
@@ -79,7 +77,6 @@ public class IQOption implements EventListener {
 	
 	private void initServices() {
 		this.loginService = new LoginService();
-		this.changeBalanceService = new ChangeBalanceService();
 	}
 	
 	private void initListeners() {
@@ -113,7 +110,7 @@ public class IQOption implements EventListener {
 			res = loginService.login(email, password);
 		} catch (RestClientException e) {
 			logger.error(e.getMessage());
-			logger.error("Could not login into IQOption..");
+			logger.error("[API] Could not login into IQOption..");
 			return;
 		}
 		
@@ -121,8 +118,8 @@ public class IQOption implements EventListener {
 			this.cookies = res.getHeaders().get("Set-Cookie").get(0);
 			this.isAuthenticated = true;
 			this.ssid = this.cookies.substring(5, this.cookies.indexOf(';'));
-			this.headers.set(HttpHeaders.COOKIE, "ssid=" + cookies);
-			logger.info("Logged into IQOption rest api");
+			this.headers.set(HttpHeaders.COOKIE, "ssid=" + this.ssid);
+			logger.info("[API] Logged into IQOption rest api");
 		}
 
 		try {
@@ -136,7 +133,7 @@ public class IQOption implements EventListener {
 
 			webSocket.sendMessage(new BaseRequestMessage<String>("ssid", "", ssid));
 		} catch (URISyntaxException e) {
-			logger.error(e.getMessage());
+			logger.error("[WS]" + e.getMessage());
 		}
 
 	}
@@ -152,9 +149,14 @@ public class IQOption implements EventListener {
 			.stream()
 			.filter(b -> b.getId() == id)
 			.findFirst().get();
-		this.activeBalanceId = id;
-		logger.info("Current balance is: " + BalanceType.get(balance.getType()));
+		
+		logger.info("[BALANCE] Current balance is: " + BalanceType.get(balance.getType()));
 		balances = profile.getMsg().getBalances();
+		
+		if(activeBalanceId == null) {
+			logger.info("[BALANCE] API just started up, making sure we are on PRACTICE ACCOUNT");
+			changeBalance(BalanceType.PRACTICE);
+		}		
 	}
 	
 	/*
@@ -224,12 +226,13 @@ public class IQOption implements EventListener {
 	 * @param type
 	 * @return Response Entity
 	 */
-	public ResponseEntity<String> changeBalance(BalanceType type) {
+	public void changeBalance(BalanceType type) {
 		Balance balance = balances
 				.stream()
 				.filter(b -> b.getType() == type.getId())
 				.findFirst().get();
-		return changeBalanceService.changeBalance(balance.getId(), this.headers);
+		activeBalanceId = balance.getId();
+		logger.info("[BALANCE] changed to " + type);
 	}
 	
 	/*

@@ -40,13 +40,13 @@ public class IQOptionWS {
 
     @OnOpen
     public void onOpen(Session userSession) {
-    	logger.info("Opening websocket");
+    	logger.info("[WS] Opening websocket");
         this.userSession = userSession;
     }
 
     @OnClose
     public void onClose(Session userSession, CloseReason reason) {
-    	logger.info("Closing websocket due to reason " + reason.getReasonPhrase());
+    	logger.info("[WS] Closing websocket due to reason " + reason.getReasonPhrase());
         this.userSession = null;
     }
 

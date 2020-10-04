@@ -33,10 +33,10 @@ public class EventManager {
 		Events ev = Events.get(messageName);
 		
 		if(ev == null) {
-			logger.debug("Ignored: " + messageName);
+			logger.info("[EVEVNT] ignored: " + messageName + " " + originalMessage);
 			return;
 		}
-		logger.debug("not ignored: " + messageName);
+		logger.debug("[EVEVNT] not ignored: " + messageName);
 		for(EventListener listener: subscribers.get(ev)) {
 			listener.update(ev, originalMessage);
 		}
