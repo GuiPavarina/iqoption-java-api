@@ -1,5 +1,7 @@
 package org.guipavarina.iqoption.ws.response;
 
+import org.guipavarina.iqoption.enums.CandleDirection;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -117,6 +119,16 @@ public class Candle {
 	@JsonProperty("id")
 	public void setId(Integer id) {
 		this.id = id;
+	}
+	
+	public CandleDirection getDirection() {
+		if(getClose() > getOpen()) {
+			return CandleDirection.UP;
+		} else if (getClose() == getOpen()) {
+			return CandleDirection.DRAW;
+		} else {
+			return CandleDirection.DOWN;
+		}
 	}
 
 	@Override

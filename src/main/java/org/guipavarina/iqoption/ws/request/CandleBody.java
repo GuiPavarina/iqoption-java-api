@@ -11,13 +11,13 @@ public class CandleBody {
 	@JsonProperty("count")
 	private Integer count;
 	@JsonProperty("to")
-	private Integer to;
+	private long to;
 	@JsonProperty("size")
 	private Integer size;
 	@JsonProperty("active_id")
 	private Integer activeId;
 	
-	public CandleBody(Integer count, Integer to, Integer size, Integer activeId) {
+	public CandleBody(Integer count, long to, Integer size, Integer activeId) {
 		super();
 		this.count = count;
 		this.to = to;
@@ -36,12 +36,12 @@ public class CandleBody {
 	}
 
 	@JsonProperty("to")
-	public Integer getTo() {
+	public long getTo() {
 		return to;
 	}
 
 	@JsonProperty("to")
-	public void setTo(Integer to) {
+	public void setTo(long to) {
 		this.to = to;
 	}
 
